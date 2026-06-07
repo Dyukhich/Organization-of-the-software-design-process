@@ -45,15 +45,16 @@ class Shape:
 
 class Circle(Shape):
     """Класс геометрической фигуры 'Круг'."""
-    def __init__(self, cx: int, cy: int, radius: int, color: Color, last_modified: str):
-        super().__init__(color, last_modified)
+    def __init__(self, cx: int, cy: int, r: int, c: Color, date: str):
+        super().__init__(c, date)
         self.cx = cx
         self.cy = cy
-        self.radius = radius
+        self.radius = r
 
     def print_info(self) -> None:
-        print(f"[Круг] Центр: ({self.cx}, {self.cy}), Радиус: {self.radius} | "
-              f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
+        print(f"[Круг] Центр: ({self.cx}, {self.cy}), "
+              f"Радиус: {self.radius} | Цвет: {self.color.value} | "
+              f"Дата изменения: {self.last_modified}")
 
     def get_type_str(self) -> str:
         return "Круг"
@@ -61,14 +62,16 @@ class Circle(Shape):
 
 class Rectangle(Shape):
     """Класс геометрической фигуры 'Прямоугольник'."""
-    def __init__(self, x1: float, y1: float, x2: float, y2: float, color: Color, last_modified: str):
-        super().__init__(color, last_modified)
+    def __init__(self, x1: float, y1: float, x2: float, y2: float,
+                 c: Color, date: str):
+        super().__init__(c, date)
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
 
     def print_info(self) -> None:
-        print(f"[Прямоугольник] ЛВ: ({self.x1}, {self.y1}), ПН: ({self.x2}, {self.y2}) | "
-              f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
+        print(f"[Прямоугольник] ЛВ: ({self.x1}, {self.y1}), "
+              f"ПН: ({self.x2}, {self.y2}) | Цвет: {self.color.value} | "
+              f"Дата изменения: {self.last_modified}")
 
     def get_type_str(self) -> str:
         return "Прямоугольник"
@@ -76,36 +79,42 @@ class Rectangle(Shape):
 
 class Triangle(Shape):
     """Класс геометрической фигуры 'Треугольник'."""
-    def __init__(self, x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, color: Color, last_modified: str):
-        super().__init__(color, last_modified)
+    def __init__(self, x1: float, y1: float, x2: float, y2: float,
+                 x3: float, y3: float, c: Color, date: str):
+        super().__init__(c, date)
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
 
     def print_info(self) -> None:
-        print(f"[Треугольник] Точки: ({self.x1},{self.y1}), ({self.x2},{self.y2}), ({self.x3},{self.y3}) | "
-              f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
+        print(f"[Треугольник] Точки: ({self.x1},{self.y1}), "
+              f"({self.x2},{self.y2}), ({self.x3},{self.y3}) | "
+              f"Цвет: {self.color.value} | "
+              f"Дата изменения: {self.last_modified}")
 
     def get_type_str(self) -> str:
         return "Треугольник"
 
 
 class ShapeFactory:
-    """Фабрика для безопасного создания объектов фигур из текстовых аргументов."""
+    """Фабрика для безопасного создания объектов фигур."""
     @staticmethod
     def create_shape(parts: List[str]) -> Optional[Shape]:
-        """Парсит аргументы строки и возвращает соответствующий объект Shape."""
+        """Парсит аргументы строки и возвращает объект Shape."""
         try:
             shape_type = parts[1]
             if shape_type == "CIRCLE":
-                return Circle(int(parts[2]), int(parts[3]), int(parts[4]), 
+                return Circle(int(parts[2]), int(parts[3]), int(parts[4]),
                               Color.from_string(parts[5]), parts[6])
             elif shape_type == "RECT":
-                return Rectangle(float(parts[2]), float(parts[3]), float(parts[4]), float(parts[5]), 
+                return Rectangle(float(parts[2]), float(parts[3]),
+                                 float(parts[4]), float(parts[5]),
                                  Color.from_string(parts[6]), parts[7])
             elif shape_type == "TRIANGLE":
-                return Triangle(float(parts[2]), float(parts[3]), float(parts[4]), float(parts[5]), 
-                                float(parts[6]), float(parts[7]), Color.from_string(parts[8]), parts[9])
+                return Triangle(float(parts[2]), float(parts[3]),
+                                float(parts[4]), float(parts[5]),
+                                float(parts[6]), float(parts[7]),
+                                Color.from_string(parts[8]), parts[9])
         except (IndexError, ValueError) as e:
             print(f"Ошибка синтаксиса при добавлении фигуры: {e}")
         return None
@@ -122,11 +131,14 @@ class ProgramEngine:
         key, value = condition.split('=', 1)
         initial_count = len(self.container)
 
-        # Оптимизированная фильтрация встроенными средствами Python
         if key == "color":
-            self.container = list(filter(lambda s: s.color.value != value, self.container))
+            self.container = list(
+                filter(lambda s: s.color.value != value, self.container)
+            )
         elif key == "type":
-            self.container = list(filter(lambda s: s.get_type_str() != value, self.container))
+            self.container = list(
+                filter(lambda s: s.get_type_str() != value, self.container)
+            )
 
         if len(self.container) < initial_count:
             print(f">>> Выполнено удаление по условию: {condition}")
