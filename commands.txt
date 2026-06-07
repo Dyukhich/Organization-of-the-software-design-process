@@ -1,0 +1,9 @@
+ADD CIRCLE 10 20 5 Красный 2026-06-08
+ADD RECT 1.5 2.5 4.0 6.0 Синий 2026-05-12
+ADD TRIANGLE 0 0 3 0 0 4 Зеленый 2026-04-01
+ADD CIRCLE 0 0 15 Красный 2026-06-07
+PRINT
+REM color=Красный
+PRINT
+REM type=Прямоугольник
+PRINT
