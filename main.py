@@ -1,9 +1,9 @@
 from enum import Enum
-from datetime import datetime
+from typing import List, Optional
 
 
-# Перечисление для безопасного хранения фиксированных цветов фигур
 class Color(Enum):
+    """Перечисление допустимых цветов геометрических фигур."""
     RED = "Красный"
     ORANGE = "Оранжевый"
     YELLOW = "Желтый"
@@ -14,8 +14,8 @@ class Color(Enum):
     UNKNOWN = "Неизвестный"
 
     @classmethod
-    def from_string(cls, name: str):
-        # Словарь для сопоставления строковых названий (RU/EN) с элементами Enum
+    def from_string(cls, name: str) -> "Color":
+        """Фабричный метод преобразования текстовой строки в объект Color."""
         mapping = {
             "Красный": cls.RED, "Red": cls.RED,
             "Оранжевый": cls.ORANGE, "Orange": cls.ORANGE,
@@ -28,28 +28,30 @@ class Color(Enum):
         return mapping.get(name, cls.UNKNOWN)
 
 
-# Абстрактный базовый класс
 class Shape:
+    """Абстрактный базовый класс для всех типов плоских фигур."""
     def __init__(self, color: Color, last_modified: str):
         self.color = color
         self.last_modified = last_modified
 
-    # Метод обязателен к переопределению в дочерних классах (полиморфизм)
-    def print_info(self):
-        raise NotImplementedError("Этот метод должен быть переопределен в наследниках")
+    def print_info(self) -> None:
+        """Полиморфный метод вывода полной информации об объекте."""
+        raise NotImplementedError
 
     def get_type_str(self) -> str:
-        raise NotImplementedError("Этот метод должен быть переопределен в наследниках")
+        """Возвращает строгое текстовое имя типа фигуры."""
+        raise NotImplementedError
 
 
 class Circle(Shape):
+    """Класс геометрической фигуры 'Круг'."""
     def __init__(self, cx: int, cy: int, radius: int, color: Color, last_modified: str):
-        super().__init__(color, last_modified)  # Инициализация полей базового класса
+        super().__init__(color, last_modified)
         self.cx = cx
         self.cy = cy
         self.radius = radius
 
-    def print_info(self):
+    def print_info(self) -> None:
         print(f"[Круг] Центр: ({self.cx}, {self.cy}), Радиус: {self.radius} | "
               f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
 
@@ -58,14 +60,13 @@ class Circle(Shape):
 
 
 class Rectangle(Shape):
+    """Класс геометрической фигуры 'Прямоугольник'."""
     def __init__(self, x1: float, y1: float, x2: float, y2: float, color: Color, last_modified: str):
         super().__init__(color, last_modified)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
 
-    def print_info(self):
+    def print_info(self) -> None:
         print(f"[Прямоугольник] ЛВ: ({self.x1}, {self.y1}), ПН: ({self.x2}, {self.y2}) | "
               f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
 
@@ -74,13 +75,14 @@ class Rectangle(Shape):
 
 
 class Triangle(Shape):
+    """Класс геометрической фигуры 'Треугольник'."""
     def __init__(self, x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, color: Color, last_modified: str):
         super().__init__(color, last_modified)
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
 
-    def print_info(self):
+    def print_info(self) -> None:
         print(f"[Треугольник] Точки: ({self.x1},{self.y1}), ({self.x2},{self.y2}), ({self.x3},{self.y3}) | "
               f"Цвет: {self.color.value} | Дата изменения: {self.last_modified}")
 
@@ -88,76 +90,71 @@ class Triangle(Shape):
         return "Треугольник"
 
 
-# Управляющий класс (Контейнер и Парсер)
-class ProgramEngine:
-    def __init__(self):
-        self.container = []  # Стандартный список выступает в роли контейнера фигур
+class ShapeFactory:
+    """Фабрика для безопасного создания объектов фигур из текстовых аргументов."""
+    @staticmethod
+    def create_shape(parts: List[str]) -> Optional[Shape]:
+        """Парсит аргументы строки и возвращает соответствующий объект Shape."""
+        try:
+            shape_type = parts[1]
+            if shape_type == "CIRCLE":
+                return Circle(int(parts[2]), int(parts[3]), int(parts[4]), 
+                              Color.from_string(parts[5]), parts[6])
+            elif shape_type == "RECT":
+                return Rectangle(float(parts[2]), float(parts[3]), float(parts[4]), float(parts[5]), 
+                                 Color.from_string(parts[6]), parts[7])
+            elif shape_type == "TRIANGLE":
+                return Triangle(float(parts[2]), float(parts[3]), float(parts[4]), float(parts[5]), 
+                                float(parts[6]), float(parts[7]), Color.from_string(parts[8]), parts[9])
+        except (IndexError, ValueError) as e:
+            print(f"Ошибка синтаксиса при добавлении фигуры: {e}")
+        return None
 
-    def _execute_rem(self, condition: str):
+
+class ProgramEngine:
+    """Главный управляющий класс для работы с контейнером фигур."""
+    def __init__(self):
+        self.container: List[Shape] = []
+
+    def _execute_rem(self, condition: str) -> None:
         if '=' not in condition:
             return
-        
-        # Разбиваем условие (например, "color=Красный") на ключ и значение
         key, value = condition.split('=', 1)
         initial_count = len(self.container)
 
-        # Фильтрация списка (удаление объектов) с помощью List Comprehension
+        # Оптимизированная фильтрация встроенными средствами Python
         if key == "color":
-            self.container = [shape for shape in self.container if shape.color.value != value]
+            self.container = list(filter(lambda s: s.color.value != value, self.container))
         elif key == "type":
-            self.container = [shape for shape in self.container if shape.get_type_str() != value]
+            self.container = list(filter(lambda s: s.get_type_str() != value, self.container))
 
         if len(self.container) < initial_count:
             print(f">>> Выполнено удаление по условию: {condition}")
 
-    def process_file(self, filename: str):
+    def process_file(self, filename: str) -> None:
         try:
             with open(filename, 'r', encoding='utf-8') as file:
                 for line in file:
                     line = line.strip()
                     if not line:
                         continue
-                    
-                    parts = line.split()  # Разделение строки по пробелам на аргументы
-                    command = parts[0]    # Первый элемент строки — это всегда имя команды
+                    parts = line.split()
+                    command = parts[0]
 
                     if command == "ADD":
-                        shape_type = parts[1]  # Второй элемент определяет тип создаваемой фигуры
-                        
-                        if shape_type == "CIRCLE":
-                            # Построчный парсинг параметров согласно индексам в commands.txt
-                            cx, cy, radius = int(parts[2]), int(parts[3]), int(parts[4])
-                            color = Color.from_string(parts[5])
-                            date = parts[6]
-                            self.container.append(Circle(cx, cy, radius, color, date))
-                        
-                        elif shape_type == "RECT":
-                            x1, y1, x2, y2 = float(parts[2]), float(parts[3]), float(parts[4]), float(parts[5])
-                            color = Color.from_string(parts[6])
-                            date = parts[7]
-                            self.container.append(Rectangle(x1, y1, x2, y2, color, date))
-                        
-                        elif shape_type == "TRIANGLE":
-                            x1, y1 = float(parts[2]), float(parts[3])
-                            x2, y2 = float(parts[4]), float(parts[5])
-                            x3, y3 = float(parts[6]), float(parts[7])
-                            color = Color.from_string(parts[8])
-                            date = parts[9]
-                            self.container.append(Triangle(x1, y1, x2, y2, x3, y3, color, date))
-
+                        new_shape = ShapeFactory.create_shape(parts)
+                        if new_shape:
+                            self.container.append(new_shape)
                     elif command == "REM":
-                        condition = parts[1]
-                        self._execute_rem(condition)
-
+                        self._execute_rem(parts[1])
                     elif command == "PRINT":
                         print("--- Содержимое контейнера ---")
                         if not self.container:
                             print("[Контейнер пуст]")
                         else:
                             for shape in self.container:
-                                shape.print_info()  # Полиморфный вызов вывода информации
+                                shape.print_info()
                         print("-----------------------------")
-                        
         except FileNotFoundError:
             print(f"Ошибка: Файл {filename} не найден.")
 
