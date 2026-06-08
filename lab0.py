@@ -1,6 +1,6 @@
-"""Программа: Управление библиотечным каталогом (v2.0).
+"""Программа: Управление библиотечным каталогом (v3.0).
 
-Описание: Ведет учет книг, выводит отчеты.
+Описание: Ведет учет книг, выводит отчеты и удаляет объекты.
 Язык: Python 3
 """
 
@@ -53,6 +53,27 @@ def add_book_screen(catalog):
     print(f"Успешно добавлено: «{title}»")
 
 
+def delete_book_screen(catalog):
+    """Экран удаления книги из каталога по названию."""
+    if not catalog:
+        print("\n[Каталог пуст. Нечего удалять]")
+        return
+
+    print("\n--- Удаление книги из каталога ---")
+    search_title = input("Введите название книги для удаления: ").strip()
+
+    initial_count = len(catalog)
+    # Разбиваем list comprehension на две строки для прохождения линтера
+    catalog[:] = [
+        b for b in catalog if b.title.lower() != search_title.lower()
+    ]
+
+    if len(catalog) < initial_count:
+        print(f"Успешно удалено: книга «{search_title}» списана.")
+    else:
+        print(f"Ошибка: Книга с названием «{search_title}» не найдена.")
+
+
 def print_report_screen(catalog):
     """Экран вывода итогового аналитического отчета по всему каталогу."""
     if not catalog:
@@ -88,16 +109,19 @@ def main():
         print("=" * 40)
         print("1. Добавить новую книгу в каталог")
         print("2. Сформировать итоговый отчет")
-        print("3. Выйти из программы")
+        print("3. Удалить книгу из каталога")
+        print("4. Выйти из программы")
         print("-" * 40)
 
-        choice = input("Выберите действие (1-3): ").strip()
+        choice = input("Выберите действие (1-4): ").strip()
 
         if choice == "1":
             add_book_screen(catalog)
         elif choice == "2":
             print_report_screen(catalog)
         elif choice == "3":
+            delete_book_screen(catalog)
+        elif choice == "4":
             print("\nЗавершение работы системы. До свидания!")
             print("=" * 40)
             break
