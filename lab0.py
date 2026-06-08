@@ -1,12 +1,16 @@
-"""
-Программа: Управление библиотечным каталогом (v2.0 с интерактивным меню)
-Описание: Позволяет вести учет книг, просматривать каталог и рассчитывать итоги.
+"""Программа: Управление библиотечным каталогом (v2.0).
+
+Описание: Ведет учет книг, выводит отчеты.
 Язык: Python 3
 """
 
+
 class Book:
     """Структура для хранения информации о книге."""
-    def __init__(self, title: str, author: str, genre: str, copies: int, available: int):
+
+    def __init__(self, title: str, author: str, genre: str,
+                 copies: int, available: int):
+        """Инициализация объекта книги."""
         self.title = title
         self.author = author
         self.genre = genre
@@ -33,12 +37,12 @@ def add_book_screen(catalog):
 
     while True:
         try:
-            available = int(input("Введите количество доступных книг на полках: "))
+            available = int(input("Введите количество доступных книг: "))
             if available < 0:
                 print("Количество не может быть отрицательным!")
                 continue
             if available > copies:
-                print(f"Доступных книг не может быть больше, чем всего экземпляров ({copies})!")
+                print(f"Доступных книг не может быть больше ({copies})!")
                 continue
             break
         except ValueError:
@@ -62,21 +66,22 @@ def print_report_screen(catalog):
     print("\n" + "=" * 50)
     print("ИТОГОВЫЙ ОТЧЕТ ПО БИБЛИОТЕЧНОМУ КАТАЛОГУ")
     print("=" * 50)
-    
+
     for idx, book in enumerate(catalog, 1):
         print(f"{idx}. «{book.title}» — {book.author} [{book.genre}]")
-        print(f"   Всего экземпляров: {book.copies} шт. | Доступно на полках: {book.available} шт.")
-    
+        print(f"   Всего: {book.copies} шт. | На полках: {book.available} шт.")
+
     print("-" * 50)
     print(f"Всего наименований книг в каталоге: {total_books_types}")
-    print(f"Общее количество экземпляров всех книг в библиотеке: {total_copies_in_library} шт.")
-    print(f"Всего доступно к выдаче прямо сейчас: {total_available_books} шт.")
+    print(f"Общее количество экземпляров всех книг: {total_copies_in_library}")
+    print(f"Всего доступно к выдаче прямо сейчас: {total_available_books}")
     print("=" * 50)
 
 
 def main():
-    catalog = []  # Наш внутренний контейнер для хранения книг
-    
+    """Главная функция управления интерактивным меню библиотеки."""
+    catalog = []
+
     while True:
         print("\n" + "=" * 40)
         print("       ГЛАВНОЕ МЕНЮ БИБЛИОТЕКИ")
@@ -85,9 +90,9 @@ def main():
         print("2. Сформировать итоговый отчет")
         print("3. Выйти из программы")
         print("-" * 40)
-        
+
         choice = input("Выберите действие (1-3): ").strip()
-        
+
         if choice == "1":
             add_book_screen(catalog)
         elif choice == "2":
@@ -97,7 +102,7 @@ def main():
             print("=" * 40)
             break
         else:
-            print("\nОшибка! Некорректный пункт меню. Пожалуйста, введите число от 1 до 3.")
+            print("\nОшибка! Некорректный пункт меню.")
 
 
 if __name__ == "__main__":
